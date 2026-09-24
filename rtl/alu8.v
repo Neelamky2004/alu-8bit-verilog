@@ -1,6 +1,4 @@
-test
-  indented
-end`timescale 1ns/1ps
+`timescale 1ns/1ps
 
 module alu8 (
     input  wire [7:0] a,
