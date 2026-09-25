@@ -1,6 +1,6 @@
-# 8-bit ALU in Verilog
+# 8-bit ALU in Verilog and VHDL
 
-A combinational 8-bit ALU written in Verilog with a self-checking testbench, simulated using Icarus Verilog and viewed in GTKWave.
+An 8-bit combinational ALU written in Verilog and in VHDL. It has self-checking testbenches, and the Verilog design is synthesized to logic gates with Yosys and checked again with a gate-level simulation.
 
 ## Operations
 
@@ -19,11 +19,11 @@ Flags: Z = zero, C = carry/borrow, N = negative (MSB), V = signed overflow.
 
 ## Verification
 
-The testbench in `tb/tb_alu8.v` has a reference model and compares the DUT output and all four flags for every input.
+**Verilog (Icarus Verilog)** - `tb/tb_alu8.v` has a reference model and compares the result and all four flags.
 
 - 12 directed cases for corner values (0x7F + 1, 0xFF + 1, 0x80 - 1, equal operands, etc.)
 - 2000 random cases across all opcodes
-- Prints PASS/FAIL with a mismatch log and dumps a VCD waveform
+- Dumps a VCD waveform for GTKWave
 
 ```
 Tests run : 2012
@@ -31,19 +31,43 @@ Errors    : 0
 RESULT    : PASS
 ```
 
+**VHDL (GHDL)** - `vhdl/tb_alu8.vhd` tests every possible input: 8 opcodes x 256 x 256 values.
+
+```
+Tests run : 524288
+Errors    : 0
+RESULT    : PASS
+```
+
+## Synthesis (Yosys)
+
+`synth/synth.ys` synthesizes the Verilog ALU into basic logic gates and writes a gate-level netlist. The same Verilog testbench is then run on the netlist (gate-level simulation) and passes with 0 errors.
+
+```
+Number of cells: 240
+  AND 80, NAND 85, OR 41, NOR 8, XOR 13, XNOR 2, NOT 11
+```
+
 ## Run
 
 ```
-sh run.sh
+sh run.sh          # Verilog simulation
+sh run_vhdl.sh     # VHDL simulation
+sh run_synth.sh    # Yosys synthesis + gate-level simulation
 gtkwave build/alu8.vcd
 ```
 
-Needs Icarus Verilog (`iverilog`, `vvp`). GTKWave is optional for waveforms. The code also runs on EDA Playground.
+Needs Icarus Verilog, GHDL and Yosys. GTKWave is optional.
 
 ## Structure
 
 ```
-rtl/alu8.v       ALU design
-tb/tb_alu8.v     self-checking testbench
-run.sh           compile + simulate
+rtl/alu8.v         Verilog ALU
+tb/tb_alu8.v       Verilog self-checking testbench
+vhdl/alu8.vhd      VHDL ALU
+vhdl/tb_alu8.vhd   VHDL exhaustive testbench
+synth/synth.ys     Yosys synthesis script
+run.sh             Verilog simulation
+run_vhdl.sh        VHDL simulation
+run_synth.sh       synthesis + gate-level simulation
 ```
